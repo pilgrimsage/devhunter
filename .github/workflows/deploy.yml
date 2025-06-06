@@ -3,7 +3,7 @@ name: 🚀 React CI/CD to Hestia with Clean Deploy
 on:
   push:
     branches:
-      - main  # Or your preferred deployment branch
+      - main
 
 jobs:
   deploy:
@@ -36,13 +36,23 @@ jobs:
             rm -rf ${{ secrets.TARGET_DIR }}/*
             echo "✅ public_html cleaned."
 
+      - name: 🔍 Debug SSH Connection (Optional - Can be removed later)
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            echo "✅ SSH is working."
+            ls -la ${{ secrets.TARGET_DIR }}
+
       - name: 🚚 Deploy dist/ to public_html
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
-          script: |
-            echo "✅ SSH connection working."
-            hostname
-            ls -la ${{ secrets.TARGET_DIR }}
+          port: ${{ secrets.PORT }}
+          source: "dist/*"
+          target: ${{ secrets.TARGET_DIR }}
