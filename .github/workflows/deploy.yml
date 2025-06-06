@@ -1,0 +1,44 @@
+name: 🚀 React CI/CD to Hestia with Clean Deploy
+
+on:
+  push:
+    branches:
+      - main  # Or your preferred deployment branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⏬ Checkout code
+        uses: actions/checkout@v3
+
+      - name: ⚙️ Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: 📦 Install dependencies
+        run: npm install
+
+      - name: 🔨 Build the app
+        run: npm run build
+
+      - name: 💣 Clean remote public_html before deploy
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            echo "🚨 Cleaning public_html folder..."
+            rm -rf ${{ secrets.TARGET_DIR }}/*
+            echo "✅ public_html cleaned."
+
+      - name: 🚚 Deploy dist/ to public_html
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}_
